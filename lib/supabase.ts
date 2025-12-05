@@ -1,0 +1,153 @@
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+}
+
+const isServer = typeof window === 'undefined';
+
+// Client-side Supabase client
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const getSupabaseAdminClient = () => {
+  if (!supabaseServiceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required on the server for admin operations.');
+  }
+  return createClient<Database>(supabaseUrl, supabaseServiceKey);
+};
+
+// Server-side Supabase client with service role (never instantiated in the browser)
+export const supabaseAdmin: SupabaseClient<Database> = isServer
+  ? getSupabaseAdminClient()
+  : (null as unknown as SupabaseClient<Database>);
+
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string;
+          email: string;
+          role: 'user' | 'admin';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          role?: 'user' | 'admin';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          role?: 'user' | 'admin';
+          created_at?: string;
+          updated_at?: string;
+        };  
+      };
+      links: {
+        Row: {
+          id: string;
+          user_id: string;
+          slug: string;
+          main_title: string;
+          created_at: string;
+          expires_at: string | null;
+          earnings: number;
+          clicks: number;
+          is_active: boolean;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          slug: string;
+          main_title: string;
+          created_at?: string;
+          expires_at?: string | null;
+          earnings?: number;
+          clicks?: number;
+          is_active?: boolean;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          slug?: string;
+          main_title?: string;
+          created_at?: string;
+          expires_at?: string | null;
+          earnings?: number;
+          clicks?: number;
+          is_active?: boolean;
+        };
+      };
+      movie_links: {
+        Row: {
+          id: string;
+          link_id: string;
+          quality: '480p' | '720p' | '1080p';
+          target_url: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          link_id: string;
+          quality: '480p' | '720p' | '1080p';
+          target_url: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          link_id?: string;
+          quality?: '480p' | '720p' | '1080p';
+          target_url?: string;
+          created_at?: string;
+        };
+      };
+      clicks: {
+        Row: {
+          id: string;
+          link_id: string;
+          timestamp: string;
+          country: string | null;
+          city: string | null;
+          device: string;
+          os: string;
+          referrer: string | null;
+          earnings: number;
+          ip_hash: string;
+        };
+        Insert: {
+          id?: string;
+          link_id: string;
+          timestamp?: string;
+          country?: string | null;
+          city?: string | null;
+          device: string;
+          os: string;
+          referrer?: string | null;
+          earnings?: number;
+          ip_hash: string;
+        };
+        Update: {
+          id?: string;
+          link_id?: string;
+          timestamp?: string;
+          country?: string | null;
+          city?: string | null;
+          device?: string;
+          os?: string;
+          referrer?: string | null;
+          earnings?: number;
+          ip_hash?: string;
+        };
+      };
+    };
+  };
+};
