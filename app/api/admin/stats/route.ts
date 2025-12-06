@@ -25,8 +25,13 @@ export async function GET(req: NextRequest) {
       .select('*', { count: 'exact', head: true });
 
     // Total earnings
-    const { data: linksData } = await supabaseAdmin.from('links').select('earnings');
-    const totalEarnings = (linksData || []).reduce((sum, link) => sum + (link.earnings || 0), 0);
+    const { data: linksData } = await (supabaseAdmin as any)
+      .from('links')
+      .select('earnings');
+    const totalEarnings = (linksData || []).reduce(
+      (sum: number, link: any) => sum + (link.earnings || 0),
+      0
+    );
 
     // Top earners
     const { data: topEarners } = await supabaseAdmin
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
 
         return {
           userId: link.user_id,
-          email: user?.email || 'Unknown',
+          email: (user as any)?.email || 'Unknown',
           earnings: link.earnings,
         };
       })
