@@ -324,6 +324,4 @@ For issues or questions, please create an issue in the repository.
 ---
 
 **Built with ❤️ for creators and developers**
-#   S m a r t - S h o r t  
- #   S m a r t - S h o r t  
- 
+#
