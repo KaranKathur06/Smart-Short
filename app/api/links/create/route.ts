@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     const linkId = generateId();
 
     // Create link
-    const { error: linkError } = await supabaseAdmin.from('links').insert({
+    const { error: linkError } = await (supabaseAdmin as any).from('links').insert({
       id: linkId,
       user_id: user.id,
       slug,
@@ -80,7 +80,9 @@ export async function POST(req: NextRequest) {
       target_url: link.targetUrl,
     }));
 
-    const { error: movieError } = await supabaseAdmin.from('movie_links').insert(movieLinkRecords);
+    const { error: movieError } = await (supabaseAdmin as any)
+      .from('movie_links')
+      .insert(movieLinkRecords);
 
     if (movieError) {
       return createErrorResponse('Failed to create movie links');

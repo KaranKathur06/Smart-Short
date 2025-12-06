@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Link as LinkIcon,
@@ -13,9 +13,12 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import toast from 'react-hot-toast';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
@@ -72,7 +75,17 @@ export default function Sidebar() {
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors">
+          <button
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+                toast.success('Logged out safely 👋');
+              } finally {
+                router.replace('/auth/login');
+              }
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+          >
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </button>

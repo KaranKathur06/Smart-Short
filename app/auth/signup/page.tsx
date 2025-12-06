@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Loader } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -15,19 +15,6 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session) {
-        router.replace('/dashboard');
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,16 +40,26 @@ export default function Signup() {
       });
 
       if (signUpError) {
-        setError(signUpError.message || 'Signup failed. Please try again.');
+        const msg = signUpError.message?.toLowerCase() || '';
+        if (msg.includes('user already registered') || msg.includes('already registered')) {
+          setError('Email already registered. Please sign in instead.');
+        } else {
+          setError(signUpError.message || 'Signup failed. Please try again.');
+        }
         return;
       }
 
       if (data.user) {
         try {
-          await (supabase as any).from('users').insert({
-            id: data.user.id,
-            email: data.user.email as string,
-          });
+          await (supabase as any)
+            .from('users')
+            .insert({
+              id: data.user.id,
+              email: data.user.email as string,
+              role: 'user',
+              verified: true,
+              created_at: new Date().toISOString(),
+            });
         } catch {
         }
       }

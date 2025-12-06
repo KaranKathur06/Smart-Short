@@ -36,6 +36,16 @@ export type Database = {
           role: 'user' | 'admin';
           created_at: string;
           updated_at: string;
+          verified: boolean;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+          upi_id: string | null;
+          paypal_email: string | null;
+          bank_details: string | null;
+          notify_email: boolean | null;
+          notify_withdrawal: boolean | null;
+          notify_analytics: boolean | null;
         };
         Insert: {
           id: string;
@@ -43,6 +53,16 @@ export type Database = {
           role?: 'user' | 'admin';
           created_at?: string;
           updated_at?: string;
+          verified?: boolean;
+          full_name?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          upi_id?: string | null;
+          paypal_email?: string | null;
+          bank_details?: string | null;
+          notify_email?: boolean | null;
+          notify_withdrawal?: boolean | null;
+          notify_analytics?: boolean | null;
         };
         Update: {
           id?: string;
@@ -50,6 +70,16 @@ export type Database = {
           role?: 'user' | 'admin';
           created_at?: string;
           updated_at?: string;
+          verified?: boolean;
+          full_name?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          upi_id?: string | null;
+          paypal_email?: string | null;
+          bank_details?: string | null;
+          notify_email?: boolean | null;
+          notify_withdrawal?: boolean | null;
+          notify_analytics?: boolean | null;
         };  
       };
       links: {

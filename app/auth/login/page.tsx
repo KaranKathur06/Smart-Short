@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Loader } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -12,19 +13,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session) {
-        router.replace('/dashboard');
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,19 +26,23 @@ export default function Login() {
       });
 
       if (signInError) {
-        setError(signInError.message || 'Login failed. Please try again.');
+        const msg = signInError.message?.toLowerCase() || '';
+        if (msg.includes('invalid login credentials')) {
+          setError('Wrong password or email not registered.');
+        } else if (msg.includes('email not confirmed') || msg.includes('not confirmed')) {
+          setError('Email not confirmed. Please verify to continue.');
+        } else {
+          setError(signInError.message || 'Login failed. Please try again.');
+        }
         return;
       }
 
-      const user: any = data?.user;
-      const emailConfirmed = user?.email_confirmed_at || user?.confirmed_at;
-
-      if (!emailConfirmed) {
-        await supabase.auth.signOut();
-        setError('Please verify email');
+      if (!data?.session) {
+        setError('Login failed. Please try again.');
         return;
       }
 
+      toast.success('Welcome back! Login successful 🎉');
       router.push('/dashboard');
     } catch (err) {
       setError('Login failed. Please try again.');

@@ -1,26 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowRight, Zap, BarChart3, Shield, Smartphone } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session) {
-        router.replace('/dashboard');
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
