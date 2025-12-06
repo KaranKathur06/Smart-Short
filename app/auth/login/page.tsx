@@ -1,19 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, Loader } from 'lucide-react';
+import { Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [displayPassword, setDisplayPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check for email verification success
   useEffect(() => {
@@ -24,6 +27,40 @@ export default function Login() {
       router.replace('/auth/login');
     }
   }, [searchParams, router]);
+
+  // Handle "show while typing" feature
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    // Show last character briefly
+    if (newPassword.length > password.length && !showPassword) {
+      const lastChar = newPassword[newPassword.length - 1];
+      const masked = '•'.repeat(newPassword.length - 1) + lastChar;
+      setDisplayPassword(masked);
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Hide after 800ms
+      typingTimeoutRef.current = setTimeout(() => {
+        setDisplayPassword('');
+      }, 800);
+    } else {
+      setDisplayPassword('');
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,13 +135,29 @@ export default function Login() {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                 <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  type={showPassword ? "text" : "password"}
+                  value={showPassword ? password : (displayPassword || password)}
+                  onChange={handlePasswordChange}
+                  className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowPassword(!showPassword);
+                    }
+                  }}
+                  className="absolute right-3 top-3 w-5 h-5 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={0}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 

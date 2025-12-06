@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Loader, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { calculatePasswordStrength, getPasswordStrengthWidth } from '@/lib/password-utils';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -14,10 +15,80 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [displayPassword, setDisplayPassword] = useState('');
+  const [displayConfirmPassword, setDisplayConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const confirmTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const passwordStrength = calculatePasswordStrength(password);
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  // Handle "show while typing" feature for password
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    // Show last character briefly
+    if (newPassword.length > password.length && !showPassword) {
+      const lastChar = newPassword[newPassword.length - 1];
+      const masked = '•'.repeat(newPassword.length - 1) + lastChar;
+      setDisplayPassword(masked);
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Hide after 800ms
+      typingTimeoutRef.current = setTimeout(() => {
+        setDisplayPassword('');
+      }, 800);
+    } else {
+      setDisplayPassword('');
+    }
+  };
+
+  // Handle "show while typing" feature for confirm password
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setConfirmPassword(newPassword);
+
+    // Show last character briefly
+    if (newPassword.length > confirmPassword.length && !showConfirmPassword) {
+      const lastChar = newPassword[newPassword.length - 1];
+      const masked = '•'.repeat(newPassword.length - 1) + lastChar;
+      setDisplayConfirmPassword(masked);
+
+      // Clear previous timeout
+      if (confirmTypingTimeoutRef.current) {
+        clearTimeout(confirmTypingTimeoutRef.current);
+      }
+
+      // Hide after 800ms
+      confirmTypingTimeoutRef.current = setTimeout(() => {
+        setDisplayConfirmPassword('');
+      }, 800);
+    } else {
+      setDisplayConfirmPassword('');
+    }
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (confirmTypingTimeoutRef.current) {
+        clearTimeout(confirmTypingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +100,11 @@ export default function Signup() {
       return;
     }
 
+    if (passwordStrength.strength === 'weak') {
+      setError('Please choose a stronger password');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -36,7 +112,7 @@ export default function Signup() {
       const baseUrl = typeof window !== 'undefined' 
         ? window.location.origin 
         : process.env.NEXT_PUBLIC_APP_URL || 'https://smartshort.in';
-      const redirectUrl = `${baseUrl}/auth/login`;
+      const redirectUrl = `${baseUrl}/auth/callback`;
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -151,8 +227,8 @@ export default function Signup() {
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={showPassword ? password : (displayPassword || password)}
+                  onChange={handlePasswordChange}
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required
@@ -160,12 +236,44 @@ export default function Signup() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 w-5 h-5 text-slate-500 hover:text-slate-300 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowPassword(!showPassword);
+                    }
+                  }}
+                  className="absolute right-3 top-3 w-5 h-5 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={0}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              
+              {/* Password Strength Meter */}
+              {password.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Password Strength:</span>
+                    <span 
+                      className="font-medium transition-colors duration-300"
+                      style={{ color: passwordStrength.color }}
+                    >
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width: getPasswordStrengthWidth(passwordStrength.strength),
+                        backgroundColor: passwordStrength.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -174,27 +282,60 @@ export default function Signup() {
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="input-field pl-10 pr-10"
+                  value={showConfirmPassword ? confirmPassword : (displayConfirmPassword || confirmPassword)}
+                  onChange={handleConfirmPasswordChange}
+                  className={`input-field pl-10 pr-10 ${
+                    passwordsMatch ? 'border-emerald-500/50 focus:border-emerald-500' : 
+                    passwordsMismatch ? 'border-red-500/50 focus:border-red-500' : ''
+                  }`}
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 w-5 h-5 text-slate-500 hover:text-slate-300 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowConfirmPassword(!showConfirmPassword);
+                    }
+                  }}
+                  className="absolute right-3 top-3 w-5 h-5 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  title={showConfirmPassword ? "Hide password" : "Show password"}
+                  tabIndex={0}
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
+                {passwordsMatch && (
+                  <div className="absolute right-10 top-3 flex items-center">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  </div>
+                )}
               </div>
+              
+              {/* Confirm Password Validation Indicator */}
+              {confirmPassword.length > 0 && (
+                <div className="mt-2 flex items-center gap-2 text-xs transition-opacity duration-300">
+                  {passwordsMatch ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span className="text-emerald-400">Passwords match</span>
+                    </>
+                  ) : passwordsMismatch ? (
+                    <>
+                      <XCircle className="w-4 h-4 text-red-500" />
+                      <span className="text-red-400">Passwords do not match</span>
+                    </>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              disabled={loading || passwordStrength.strength === 'weak' || !passwordsMatch}
+              className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

@@ -19,12 +19,25 @@ export async function GET(req: NextRequest) {
 
   // Handle email verification (signup/email confirmation)
   if ((type === 'signup' || type === 'email') && code) {
-    const { error } = await supabaseAdmin.auth.exchangeCodeForSession(code);
-    if (!error) {
-      // Redirect to login with success message
-      const loginUrl = new URL('/auth/login', baseUrl);
-      loginUrl.searchParams.set('verified', 'true');
-      return NextResponse.redirect(loginUrl);
+    const { data, error } = await supabaseAdmin.auth.exchangeCodeForSession(code);
+    if (!error && data?.session) {
+      // Auto-login successful, redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+    } else if (!error) {
+      // Session created but redirect to callback page for client-side handling
+      return NextResponse.redirect(new URL('/auth/callback?code=' + code, baseUrl));
+    }
+  }
+  
+  // Handle general code exchange (OAuth, etc.)
+  if (code && !type) {
+    const { data, error } = await supabaseAdmin.auth.exchangeCodeForSession(code);
+    if (!error && data?.session) {
+      // Redirect to dashboard if session created
+      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+    } else if (!error) {
+      // Redirect to callback page for client-side handling
+      return NextResponse.redirect(new URL('/auth/callback?code=' + code, baseUrl));
     }
   }
 
