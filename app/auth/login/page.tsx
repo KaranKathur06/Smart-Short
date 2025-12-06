@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Loader } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -13,6 +13,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for email verification success
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      toast.success('🎉 Email Verified Successfully! You can now access your dashboard');
+      // Clean up URL
+      router.replace('/auth/login');
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +124,12 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 space-y-3 text-center">
+            <p className="text-slate-400">
+              <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
+                Forgot your password?
+              </Link>
+            </p>
             <p className="text-slate-400">
               Don't have an account?{' '}
               <Link href="/auth/signup" className="text-blue-400 hover:text-blue-300">

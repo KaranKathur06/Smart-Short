@@ -79,7 +79,7 @@ export default function Sidebar() {
             onClick={async () => {
               try {
                 await supabase.auth.signOut();
-                toast.success('Logged out safely 👋');
+                toast.success('Logout successful — See you soon 👋');
               } finally {
                 router.replace('/auth/login');
               }

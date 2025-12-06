@@ -1,93 +1,67 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Loader, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Lock, Loader, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
-export default function Signup() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export default function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Check if we have a valid token
+    const token = searchParams.get('token');
+    if (!token) {
+      toast.error('Invalid or expired reset link');
+      router.push('/auth/forgot-password');
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Get the base URL for redirect
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : process.env.NEXT_PUBLIC_APP_URL || 'https://smartshort.in';
-      const redirectUrl = `${baseUrl}/auth/login`;
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: name,
-          },
-        },
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password,
       });
 
-      if (signUpError) {
-        const msg = signUpError.message?.toLowerCase() || '';
-        if (msg.includes('user already registered') || msg.includes('already registered')) {
-          setError('Email already registered. Please sign in instead.');
-          toast.error('Email already registered. Please sign in instead.');
-        } else {
-          setError(signUpError.message || 'Signup failed. Please try again.');
-          toast.error(signUpError.message || 'Signup failed. Please try again.');
-        }
+      if (updateError) {
+        setError(updateError.message || 'Failed to reset password');
+        toast.error(updateError.message || 'Failed to reset password');
         return;
       }
 
-      if (data.user) {
-        try {
-          await (supabase as any)
-            .from('users')
-            .insert({
-              id: data.user.id,
-              email: data.user.email as string,
-              role: 'user',
-              verified: true,
-              created_at: new Date().toISOString(),
-            });
-        } catch {
-        }
-      }
-
-      setSuccess('Account created successfully. Check your email to verify your account.');
-      toast.success('Signup successful! Check your email to verify your account 📧');
-      setName('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-
+      toast.success('Password reset successfully! Redirecting to login...');
       setTimeout(() => {
         router.push('/auth/login');
-      }, 2000);
+      }, 1500);
     } catch (err) {
-      setError('Signup failed. Please try again.');
+      setError('Failed to reset password. Please try again.');
+      toast.error('Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -98,8 +72,8 @@ export default function Signup() {
       <div className="w-full max-w-md">
         <div className="card">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-            <p className="text-slate-400">Join SmartShort and start earning</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
+            <p className="text-slate-400">Enter your new password</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,44 +83,8 @@ export default function Signup() {
               </div>
             )}
 
-            {success && (
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/50 rounded-lg text-emerald-400 text-sm">
-                {success}
-              </div>
-            )}
-
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input-field pl-10"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-field pl-10"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">New Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                 <input
@@ -156,6 +94,7 @@ export default function Signup() {
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -179,6 +118,7 @@ export default function Signup() {
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -199,24 +139,22 @@ export default function Signup() {
               {loading ? (
                 <>
                   <Loader className="w-4 h-4 animate-spin" />
-                  Creating account...
+                  Resetting...
                 </>
               ) : (
-                'Create Account'
+                'Reset Password'
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-slate-400">
-              Already have an account?{' '}
-              <Link href="/auth/login" className="text-blue-400 hover:text-blue-300">
-                Sign in
-              </Link>
-            </p>
+            <Link href="/auth/login" className="text-blue-400 hover:text-blue-300 text-sm">
+              Back to Login
+            </Link>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
