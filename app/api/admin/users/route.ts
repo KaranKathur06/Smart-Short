@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAdmin, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const admin = await verifyAdmin(req);
@@ -29,22 +31,37 @@ export async function GET(req: NextRequest) {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
 
-        const { count: clickCount } = await supabaseAdmin
-          .from('clicks')
-          .select('*', { count: 'exact', head: true })
-          .eq('link_id', (await supabaseAdmin.from('links').select('id').eq('user_id', user.id)).data?.[0]?.id);
+        // Get all link IDs for this user
+        const { data: userLinks } = await (supabaseAdmin as any)
+          .from('links')
+          .select('id')
+          .eq('user_id', user.id);
 
-        const { data: linksData } = await supabaseAdmin
+        const linkIds = (userLinks || []).map((l: any) => l.id);
+
+        let clickCount = 0;
+        if (linkIds.length > 0) {
+          const { count } = await (supabaseAdmin as any)
+            .from('clicks')
+            .select('*', { count: 'exact', head: true })
+            .in('link_id', linkIds);
+          clickCount = count || 0;
+        }
+
+        const { data: linksData } = await (supabaseAdmin as any)
           .from('links')
           .select('earnings')
           .eq('user_id', user.id);
 
-        const earnings = (linksData || []).reduce((sum: number, link: any) => sum + (link.earnings || 0), 0);
+        const earnings = (linksData || []).reduce(
+          (sum: number, link: any) => sum + (link.earnings || 0),
+          0
+        );
 
         return {
           ...user,
           linkCount: linkCount || 0,
-          clickCount: clickCount || 0,
+          clickCount,
           earnings: Math.round(earnings * 100) / 100,
         };
       })
@@ -80,7 +97,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === 'ban') {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('users')
         .update({ role: 'banned' })
         .eq('id', userId);
@@ -90,7 +107,10 @@ export async function PATCH(req: NextRequest) {
       }
 
       // Deactivate all user links
-      await supabaseAdmin.from('links').update({ is_active: false }).eq('user_id', userId);
+      await (supabaseAdmin as any)
+        .from('links')
+        .update({ is_active: false })
+        .eq('user_id', userId);
 
       return createSuccessResponse({ message: 'User banned successfully' });
     }

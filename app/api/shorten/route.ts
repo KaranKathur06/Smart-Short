@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth, rateLimit, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 import { generateSlug, generateId, isValidUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const user = await verifyAuth(req);

@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAdmin, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const admin = await verifyAdmin(req);

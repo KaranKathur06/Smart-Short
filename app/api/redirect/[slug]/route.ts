@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getClientIp, hashIp, getDeviceType, getOS, getReferrer, isExpired } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const slug = params.slug;
 
     // Get link
-    const { data: link } = await supabaseAdmin
+    const { data: link } = await (supabaseAdmin as any)
       .from('links')
       .select('*')
       .eq('slug', slug)
@@ -24,10 +26,10 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     }
 
     // Get movie links
-    const { data: movieLinks } = await supabaseAdmin
+    const { data: movieLinks } = await (supabaseAdmin as any)
       .from('movie_links')
       .select('*')
-      .eq('link_id', link.id);
+      .eq('link_id', (link as any).id);
 
     if (!movieLinks || movieLinks.length === 0) {
       return NextResponse.json({ error: 'No movie links found' }, { status: 404 });
@@ -47,8 +49,8 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     let city = 'Unknown';
 
     // Log click
-    const { error: clickError } = await supabaseAdmin.from('clicks').insert({
-      link_id: link.id,
+    const { error: clickError } = await (supabaseAdmin as any).from('clicks').insert({
+      link_id: (link as any).id,
       timestamp: new Date().toISOString(),
       country,
       city,
@@ -61,17 +63,17 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
 
     if (!clickError) {
       // Update link clicks and earnings
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('links')
         .update({
-          clicks: link.clicks + 1,
-          earnings: link.earnings + parseFloat(process.env.NEXT_PUBLIC_AD_REVENUE_PER_CLICK || '0.001'),
+          clicks: (link as any).clicks + 1,
+          earnings: (link as any).earnings + parseFloat(process.env.NEXT_PUBLIC_AD_REVENUE_PER_CLICK || '0.001'),
         })
-        .eq('id', link.id);
+        .eq('id', (link as any).id);
     }
 
     // Select best quality link based on device
-    let selectedLink = movieLinks.find((ml: any) => ml.quality === '720p');
+    let selectedLink = (movieLinks as any[]).find((ml: any) => ml.quality === '720p');
     if (!selectedLink && device === 'mobile') {
       selectedLink = movieLinks.find((ml: any) => ml.quality === '480p');
     }

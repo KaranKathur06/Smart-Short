@@ -14,7 +14,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const getSupabaseAdminClient = () => {
+const getSupabaseAdminClient = (): SupabaseClient<Database> => {
   if (!supabaseServiceKey) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is required on the server for admin operations.');
   }
@@ -22,9 +22,18 @@ const getSupabaseAdminClient = () => {
 };
 
 // Server-side Supabase client with service role (never instantiated in the browser)
+// This is only used in API routes (server-side), so it's safe to assert the type
 export const supabaseAdmin: SupabaseClient<Database> = isServer
   ? getSupabaseAdminClient()
   : (null as unknown as SupabaseClient<Database>);
+
+// Helper function for server-side usage that ensures proper typing
+export function getSupabaseAdmin(): SupabaseClient<Database> {
+  if (!isServer) {
+    throw new Error('supabaseAdmin can only be used on the server side');
+  }
+  return getSupabaseAdminClient();
+}
 
 export type Database = {
   public: {

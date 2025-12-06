@@ -1,7 +1,7 @@
 'use client';
 
 import Sidebar from '@/components/Sidebar';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -163,7 +163,7 @@ function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: num
   return <span>{formatted}</span>;
 }
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -853,5 +853,22 @@ export default function AnalyticsPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-slate-950">
+          <div className="card flex items-center gap-3">
+            <span className="w-4 h-4 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-slate-200">Loading analytics...</span>
+          </div>
+        </div>
+      }
+    >
+      <AnalyticsContent />
+    </Suspense>
   );
 }

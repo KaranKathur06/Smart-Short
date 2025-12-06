@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 const MIN_WITHDRAW_AMOUNT = parseFloat(process.env.MIN_WITHDRAW_AMOUNT || '50');
 
 export async function POST(req: NextRequest) {

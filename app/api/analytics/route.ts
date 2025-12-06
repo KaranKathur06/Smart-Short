@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 function getTimeRange(period: string, startDateParam: string | null, endDateParam: string | null) {
   if (startDateParam && endDateParam) {
     const start = new Date(startDateParam);

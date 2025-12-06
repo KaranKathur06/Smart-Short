@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from './supabase';
+import { supabaseAdmin, type Database } from './supabase';
+
+type UserRow = Database['public']['Tables']['users']['Row'];
 
 const RATE_LIMIT_REQUESTS = parseInt(process.env.RATE_LIMIT_REQUESTS || '100');
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000');
@@ -52,9 +54,18 @@ export async function verifyAdmin(req: NextRequest) {
     return null;
   }
 
-  const { data } = await supabaseAdmin.from('users').select('role').eq('id', user.id).single();
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-  if (data?.role === 'admin') {
+  if (error || !data) {
+    return null;
+  }
+
+  const userData = data as Pick<UserRow, 'role'>;
+  if (userData.role === 'admin') {
     return user;
   }
 

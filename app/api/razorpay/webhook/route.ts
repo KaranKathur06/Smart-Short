@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;

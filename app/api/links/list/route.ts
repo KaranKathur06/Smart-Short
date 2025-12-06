@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req);
@@ -34,8 +36,8 @@ export async function GET(req: NextRequest) {
 
     // Get movie links for each link
     const linksWithMovies = await Promise.all(
-      (links || []).map(async (link) => {
-        const { data: movieLinks } = await supabaseAdmin
+      (links || []).map(async (link: any) => {
+        const { data: movieLinks } = await (supabaseAdmin as any)
           .from('movie_links')
           .select('*')
           .eq('link_id', link.id);

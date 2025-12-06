@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth, createErrorResponse, createSuccessResponse } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(req: NextRequest) {
   try {
     const user = await verifyAuth(req);
@@ -17,7 +19,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Verify ownership
-    const { data: link } = await supabaseAdmin
+    const { data: link } = await (supabaseAdmin as any)
       .from('links')
       .select('user_id')
       .eq('id', linkId)

@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import type { NextRequest } from 'next/server';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,9 +25,9 @@ export function hashIp(ip: string): string {
   return crypto.createHash('sha256').update(ip).digest('hex');
 }
 
-export function getClientIp(req: any): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip = typeof forwarded === 'string' ? forwarded.split(',')[0] : req.socket?.remoteAddress;
+export function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : null;
   return ip || 'unknown';
 }
 
