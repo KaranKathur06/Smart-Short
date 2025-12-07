@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Loader } from 'lucide-react';
 
 function VerifyContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Auto-redirect to login with verified=true
