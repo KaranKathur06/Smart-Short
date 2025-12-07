@@ -16,14 +16,8 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Get the base URL for redirect
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : process.env.NEXT_PUBLIC_APP_URL || 'https://smartshort.in';
-      const redirectUrl = `${baseUrl}/auth/reset-password`;
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
+        redirectTo: 'https://smartshort.in/auth/reset-password',
       });
 
       if (error) {

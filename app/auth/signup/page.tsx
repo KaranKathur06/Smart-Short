@@ -108,17 +108,11 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // Get the base URL for redirect
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : process.env.NEXT_PUBLIC_APP_URL || 'https://smartshort.in';
-      const redirectUrl = `${baseUrl}/auth/callback`;
-
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: 'https://smartshort.in/auth/login',
           data: {
             full_name: name,
           },
