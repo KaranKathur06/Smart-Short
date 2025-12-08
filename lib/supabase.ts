@@ -187,6 +187,96 @@ export type Database = {
           ip_hash?: string;
         };
       };
+      wallet_transactions: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount: number;
+          status: string;
+          method: string;
+          account_identifier: string;
+          payment_link_id: string | null;
+          razorpay_status: string | null;
+          created_at: string;
+          processed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          amount: number;
+          status: string;
+          method: string;
+          account_identifier: string;
+          payment_link_id?: string | null;
+          razorpay_status?: string | null;
+          created_at?: string;
+          processed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          amount?: number;
+          status?: string;
+          method?: string;
+          account_identifier?: string;
+          payment_link_id?: string | null;
+          razorpay_status?: string | null;
+          created_at?: string;
+          processed_at?: string | null;
+        };
+      };
+      settings: {
+        Row: {
+          id: number;
+          key: string;
+          value: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          key: string;
+          value: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          key?: string;
+          value?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      contact_messages: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          subject: string;
+          message: string;
+          status: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          subject: string;
+          message: string;
+          status?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          subject?: string;
+          message?: string;
+          status?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };

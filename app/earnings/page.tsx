@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, Wallet, Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import CpmWidget from '@/components/CpmWidget';
 import {
   LineChart,
   Line,
@@ -227,6 +228,10 @@ export default function EarningsPage() {
             {error && (
               <p className="text-sm text-red-400 mt-2">{error}</p>
             )}
+          </div>
+
+          <div className="mb-8">
+            <CpmWidget token={accessToken} title="CPM Snapshot" />
           </div>
 
           {/* Earnings Cards */}

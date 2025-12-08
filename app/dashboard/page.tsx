@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { BarChart3, Link as LinkIcon, Eye, DollarSign, Copy, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
+import CpmWidget from '@/components/CpmWidget';
 
 type DashboardLink = {
   id: string;
@@ -247,6 +248,10 @@ export default function Dashboard() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
             <p className="text-slate-400">Shorten links and track performance.</p>
+          </div>
+
+          <div className="mb-8">
+            <CpmWidget token={accessToken} />
           </div>
 
           <div className="card mb-8">

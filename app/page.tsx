@@ -1,29 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Zap, BarChart3, Shield, Smartphone } from 'lucide-react';
+import { ArrowRight, BarChart3, Shield, Smartphone, Zap } from 'lucide-react';
+import PublicNav from '@/components/PublicNav';
+import PublicFooter from '@/components/PublicFooter';
 
 export default function Home() {
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      {/* Navigation */}
-      <nav className="border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container-custom flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-blue-400" />
-            <span className="text-xl font-bold">SmartShort</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/auth/login" className="btn-secondary">
-              Login
-            </Link>
-            <Link href="/auth/signup" className="btn-primary">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <PublicNav />
 
       {/* Hero Section */}
       <section className="container-custom py-20 md:py-32">
@@ -89,12 +74,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-700/50 py-8 mt-20">
-        <div className="container-custom text-center text-slate-400">
-          <p>&copy; 2024 SmartShort. All rights reserved.</p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

@@ -45,6 +45,26 @@ CREATE TABLE IF NOT EXISTS links (
   is_active BOOLEAN DEFAULT true
 );
 
+-- Settings key/value store
+CREATE TABLE IF NOT EXISTS settings (
+  id SERIAL PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,
+  value TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Contact messages table for public form submissions
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Movie links table
 CREATE TABLE IF NOT EXISTS movie_links (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -77,6 +97,8 @@ CREATE INDEX IF NOT EXISTS idx_clicks_link_id ON clicks(link_id);
 CREATE INDEX IF NOT EXISTS idx_clicks_timestamp ON clicks(timestamp);
 CREATE INDEX IF NOT EXISTS idx_clicks_country ON clicks(country);
 CREATE INDEX IF NOT EXISTS idx_clicks_device ON clicks(device);
+CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at);
 
 -- Wallet transactions table
 CREATE TABLE IF NOT EXISTS wallet_transactions (
@@ -102,6 +124,8 @@ ALTER TABLE links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE movie_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clicks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Ensure all auth users are mirrored into public.users
 DO $$
@@ -258,6 +282,49 @@ BEGIN
     CREATE POLICY "Anyone can create clicks"
       ON clicks FOR INSERT
       WITH CHECK (true);
+  END IF;
+END $$;
+
+-- RLS Policies for settings table (read-only for all, manage via service role)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'settings'
+      AND policyname = 'Anyone can read settings'
+  ) THEN
+    CREATE POLICY "Anyone can read settings"
+      ON settings FOR SELECT
+      USING (true);
+  END IF;
+END $$;
+
+-- RLS Policies for contact_messages table
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'contact_messages'
+      AND policyname = 'Anyone can create contact message'
+  ) THEN
+    CREATE POLICY "Anyone can create contact message"
+      ON contact_messages FOR INSERT
+      WITH CHECK (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'contact_messages'
+      AND policyname = 'Admins can read contact messages'
+  ) THEN
+    CREATE POLICY "Admins can read contact messages"
+      ON contact_messages FOR SELECT
+      USING (EXISTS (
+        SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'
+      ));
   END IF;
 END $$;
 

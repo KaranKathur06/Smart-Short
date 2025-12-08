@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import CpmWidget from '@/components/CpmWidget';
 import {
   LineChart,
   Line,
@@ -368,6 +369,8 @@ function AnalyticsContent() {
               ))}
             </div>
           </div>
+
+          <CpmWidget token={accessToken} title="CPM Overview" />
 
           <div className="card flex flex-wrap items-end gap-4">
             <div className="flex flex-wrap gap-4 flex-1">
