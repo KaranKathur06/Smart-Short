@@ -2,14 +2,11 @@
 
 import Link from 'next/link';
 import { ArrowRight, BarChart3, Shield, Smartphone, Zap } from 'lucide-react';
-import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <PublicNav />
-
       {/* Hero Section */}
       <section className="container-custom py-20 md:py-32">
         <div className="max-w-3xl">

@@ -34,14 +34,14 @@ export default function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-slate-800 text-white"
+        className="fixed top-[86px] left-4 z-50 md:hidden p-2 rounded-lg bg-slate-800 text-white"
       >
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 p-6 transition-transform duration-300 z-40 ${
+        className={`fixed left-0 top-[70px] h-[calc(100vh-70px)] w-64 bg-slate-900 border-r border-slate-800 p-6 transition-transform duration-300 z-40 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >

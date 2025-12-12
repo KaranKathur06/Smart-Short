@@ -1,4 +1,3 @@
-import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import type { Metadata } from 'next';
 
@@ -30,8 +29,6 @@ const sections = [
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <PublicNav />
-
       <main className="container-custom py-16 space-y-10">
         <header className="max-w-3xl space-y-3">
           <p className="text-sm uppercase tracking-wide text-blue-300">Privacy Policy</p>
