@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import CpmWidget from '@/components/CpmWidget';
+import { formatINR } from '@/lib/currency';
 import {
   LineChart,
   Line,
@@ -241,7 +242,7 @@ export default function EarningsPage() {
                 <div>
                   <p className="text-slate-400 text-sm mb-1">Total Earnings</p>
                   <p className="text-3xl font-bold text-white">
-                    ₹{totalEarnings.toFixed(2)}
+                    {formatINR(totalEarnings)}
                   </p>
                   <p className="text-slate-400 text-xs mt-2">
                     {summary
@@ -260,10 +261,10 @@ export default function EarningsPage() {
                 <div>
                   <p className="text-slate-400 text-sm mb-1">Pending</p>
                   <p className="text-3xl font-bold text-white">
-                    ₹{pendingAmount.toFixed(2)}
+                    {formatINR(pendingAmount)}
                   </p>
                   <p className="text-slate-400 text-sm mt-2">
-                    Minimum: ₹{minWithdraw.toFixed(2)}
+                    Minimum: {formatINR(minWithdraw)}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-yellow-500/10 text-yellow-400">
@@ -277,7 +278,7 @@ export default function EarningsPage() {
                 <div>
                   <p className="text-slate-400 text-sm mb-1">Withdrawn</p>
                   <p className="text-3xl font-bold text-white">
-                    ₹{withdrawnAmount.toFixed(2)}
+                    {formatINR(withdrawnAmount)}
                   </p>
                   <p className="text-slate-400 text-sm mt-2">
                     {totalWithdrawals} withdrawals
@@ -341,7 +342,7 @@ export default function EarningsPage() {
             <p className="text-slate-300 text-sm mb-4">
               Available balance:{' '}
               <span className="font-semibold text-green-400">
-                ₹{availableBalance.toFixed(2)}
+                {formatINR(availableBalance)}
               </span>
             </p>
             {hasProcessing && (
@@ -394,7 +395,7 @@ export default function EarningsPage() {
                           badgeClass = 'bg-red-500/10 text-red-300';
                           label = 'Failed';
                         }
-                        const amountStr = `₹${Number(tx.amount || 0).toFixed(2)}`;
+                        const amountStr = formatINR(Number(tx.amount || 0));
                         return (
                           <tr key={tx.id} className="border-b border-slate-900">
                             <td className="py-2 px-2 text-white">{amountStr}</td>
@@ -443,7 +444,7 @@ export default function EarningsPage() {
                       placeholder={minWithdraw.toFixed(2)}
                     />
                     <p className="text-xs text-slate-400 mt-1">
-                      Minimum withdrawal: ₹{minWithdraw.toFixed(2)}
+                      Minimum withdrawal: {formatINR(minWithdraw)}
                     </p>
                   </div>
                   <div>

@@ -16,8 +16,10 @@ import {
   Shield,
   Clock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  IndianRupee
 } from 'lucide-react';
+import { formatUSD, formatINR, CPM_USD } from '@/lib/currency';
 
 interface CPMStats {
   totalEarnings: number;
@@ -110,7 +112,7 @@ export default function CPMCenter() {
     );
   }
 
-  const cpmRate = 10.00;
+  const cpmRate = CPM_USD;
   const estimatedEarnings = stats ? (stats.validClicks / 1000) * cpmRate : 0;
 
   return (
@@ -145,8 +147,7 @@ export default function CPMCenter() {
                   <div>
                     <p className="text-slate-400 text-sm font-medium mb-2">Average CPM Rate</p>
                     <div className="flex items-baseline space-x-2">
-                      <span className="text-5xl font-bold text-white">${cpmRate.toFixed(2)}</span>
-                      <span className="text-slate-400 text-lg">USD</span>
+                      <span className="text-5xl font-bold text-white">{formatUSD(cpmRate)}</span>
                     </div>
                     <p className="text-slate-500 text-sm mt-2">Fixed CPM rate per 1,000 valid views</p>
                   </div>
@@ -164,11 +165,11 @@ export default function CPMCenter() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800">
                   <div className="flex items-center space-x-3">
                     <div className="p-2.5 bg-green-500/10 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-green-400" />
+                      <IndianRupee className="w-5 h-5 text-green-400" />
                     </div>
                     <div>
                       <p className="text-slate-400 text-xs">Today's Earnings</p>
-                      <p className="text-xl font-bold text-white">${stats?.todayEarnings.toFixed(2) || '0.00'}</p>
+                      <p className="text-xl font-bold text-white">{stats ? formatINR(stats.todayEarnings) : formatINR(0)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -186,7 +187,7 @@ export default function CPMCenter() {
                     </div>
                     <div>
                       <p className="text-slate-400 text-xs">Total Earnings</p>
-                      <p className="text-xl font-bold text-white">${stats?.totalEarnings.toFixed(2) || '0.00'}</p>
+                      <p className="text-xl font-bold text-white">{stats ? formatINR(stats.totalEarnings) : formatINR(0)}</p>
                     </div>
                   </div>
                 </div>
@@ -203,21 +204,21 @@ export default function CPMCenter() {
                   <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-slate-300 font-medium">Base CPM Rate</span>
-                      <span className="text-2xl font-bold text-white">${cpmRate.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-white">{formatUSD(cpmRate)}</span>
                     </div>
-                    <p className="text-sm text-slate-500">Per 1,000 valid ad views</p>
+                    <p className="text-sm text-slate-500">Per 1,000 valid ad views (USD)</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
                       <p className="text-slate-400 text-sm mb-1">Earnings Formula</p>
                       <code className="text-blue-400 text-sm font-mono">
-                        (Valid Views / 1,000) × $10
+                        (Views / 1,000) × $10 × 83
                       </code>
                     </div>
                     <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                      <p className="text-slate-400 text-sm mb-1">Estimated Total</p>
-                      <p className="text-xl font-bold text-white">${estimatedEarnings.toFixed(2)}</p>
+                      <p className="text-slate-400 text-sm mb-1">Estimated Total (INR)</p>
+                      <p className="text-xl font-bold text-white">{formatINR(estimatedEarnings * 83)}</p>
                     </div>
                   </div>
                 </div>
@@ -243,7 +244,7 @@ export default function CPMCenter() {
                             <span className="text-slate-300 text-sm font-medium">{date}</span>
                             <div className="flex items-center space-x-4">
                               <span className="text-slate-400 text-xs">{item.click_count} views</span>
-                              <span className="text-white font-bold">${parseFloat(item.total_amount.toString()).toFixed(2)}</span>
+                              <span className="text-white font-bold">{formatINR(parseFloat(item.total_amount.toString()))}</span>
                             </div>
                           </div>
                           <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -274,13 +275,13 @@ export default function CPMCenter() {
                     {
                       icon: Info,
                       title: 'CPM means Cost Per 1,000 Views',
-                      description: 'CPM (Cost Per Mille) is the standard advertising metric. You earn $10 for every 1,000 valid ad views.',
+                      description: 'CPM (Cost Per Mille) is the standard advertising metric in USD. Our CPM is $10, which converts to ₹830 per 1,000 valid ad views.',
                       color: 'blue'
                     },
                     {
                       icon: Eye,
-                      title: 'Every 1,000 valid visits earns $10',
-                      description: 'When visitors click your short links and view the ads, you accumulate earnings. 1,000 valid views = $10.00 USD.',
+                      title: 'Every 1,000 valid visits earns ₹830',
+                      description: 'When visitors click your short links and view the ads, you accumulate earnings. 1,000 valid views = $10 USD = ₹830 INR.',
                       color: 'green'
                     },
                     {
@@ -379,11 +380,11 @@ export default function CPMCenter() {
                 </div>
                 <div className="card">
                   <div className="flex items-center space-x-3 mb-2">
-                    <DollarSign className="w-5 h-5 text-green-400" />
-                    <p className="text-slate-400 text-sm">Per View</p>
+                    <IndianRupee className="w-5 h-5 text-green-400" />
+                    <p className="text-slate-400 text-sm">Per View (INR)</p>
                   </div>
                   <p className="text-2xl font-bold text-white">
-                    ${(cpmRate / 1000).toFixed(4)}
+                    ₹{((cpmRate * 83) / 1000).toFixed(2)}
                   </p>
                 </div>
               </div>

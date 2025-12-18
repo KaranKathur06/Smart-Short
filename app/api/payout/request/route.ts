@@ -113,9 +113,11 @@ export async function POST(req: NextRequest) {
     const customerName = (user.email as string) || 'SmartShort User';
     const customerEmail = (user.email as string) || undefined;
 
+    // Note: Razorpay (India-specific payment gateway) requires INR currency
+    // Earnings are tracked in USD but converted to INR for payout processing
     const payload: any = {
       amount: amountInPaise,
-      currency: 'INR',
+      currency: 'INR', // Razorpay requirement for Indian UPI payments
       accept_partial: false,
       reference_id: inserted.id,
       description: 'SmartShort Payout',

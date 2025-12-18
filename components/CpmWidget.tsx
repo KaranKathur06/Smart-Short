@@ -3,7 +3,8 @@
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
-import { Activity, BarChart3, Eye, IndianRupee, Loader2 } from 'lucide-react';
+import { formatUSD, formatINR } from '@/lib/currency';
+import { Activity, Eye, DollarSign, IndianRupee, Loader2 } from 'lucide-react';
 
 type MetricsResponse = {
   today_earnings: number;
@@ -96,17 +97,17 @@ export default function CpmWidget({ token, title = 'CPM Analytics' }: Props) {
             <MetricCard
               icon={<IndianRupee className="w-5 h-5" />}
               label="Today's earnings"
-              value={`₹${data.today_earnings.toFixed(2)}`}
+              value={formatINR(data.today_earnings)}
             />
             <MetricCard
-              icon={<BarChart3 className="w-5 h-5" />}
+              icon={<DollarSign className="w-5 h-5" />}
               label="Average CPM"
-              value={`₹${data.cpm.toFixed(2)}`}
+              value={formatUSD(data.cpm)}
             />
             <MetricCard
               icon={<Activity className="w-5 h-5" />}
               label="Monthly earnings"
-              value={`₹${(selectedMonthEarnings ?? 0).toFixed(2)}`}
+              value={formatINR(selectedMonthEarnings ?? 0)}
               hint={selectedMonth || 'Monthly'}
             />
             <MetricCard

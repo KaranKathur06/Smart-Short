@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { BarChart3, Link as LinkIcon, Eye, DollarSign, Copy, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatINR } from '@/lib/currency';
 
 type DashboardLink = {
   id: string;
@@ -216,7 +217,7 @@ export default function Dashboard() {
   const stats = [
     { label: 'Total Links', value: totalLinks.toString(), icon: LinkIcon, color: 'blue' },
     { label: 'Total Clicks', value: totalClicks.toString(), icon: Eye, color: 'green' },
-    { label: 'Total Earnings', value: `$${totalEarnings.toFixed(2)}`, icon: DollarSign, color: 'yellow' },
+    { label: 'Total Earnings', value: formatINR(totalEarnings), icon: DollarSign, color: 'yellow' },
     { label: 'Avg CTR', value: '4.2%', icon: BarChart3, color: 'purple' },
   ];
 

@@ -116,8 +116,10 @@ function formatNumber(value: number) {
   return value.toLocaleString('en-US');
 }
 
+import { formatINR } from '@/lib/currency';
+
 function formatCurrency(value: number) {
-  return '$' + value.toFixed(2);
+  return formatINR(value);
 }
 
 function getFlag(country: string) {
