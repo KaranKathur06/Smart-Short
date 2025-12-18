@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +27,7 @@ export default function Sidebar() {
     { href: '/links', label: 'My Links', icon: LinkIcon },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/earnings', label: 'Earnings', icon: DollarSign },
+    { href: '/cpm', label: 'CPM Center', icon: Zap },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 

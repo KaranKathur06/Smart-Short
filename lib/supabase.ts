@@ -153,6 +153,7 @@ export type Database = {
         Row: {
           id: string;
           link_id: string;
+          user_id: string;
           timestamp: string;
           country: string | null;
           city: string | null;
@@ -161,10 +162,15 @@ export type Database = {
           referrer: string | null;
           earnings: number;
           ip_hash: string;
+          user_agent: string;
+          is_valid: boolean;
+          is_completed: boolean;
+          completed_at: string | null;
         };
         Insert: {
           id?: string;
           link_id: string;
+          user_id: string;
           timestamp?: string;
           country?: string | null;
           city?: string | null;
@@ -173,10 +179,15 @@ export type Database = {
           referrer?: string | null;
           earnings?: number;
           ip_hash: string;
+          user_agent: string;
+          is_valid?: boolean;
+          is_completed?: boolean;
+          completed_at?: string | null;
         };
         Update: {
           id?: string;
           link_id?: string;
+          user_id?: string;
           timestamp?: string;
           country?: string | null;
           city?: string | null;
@@ -185,6 +196,10 @@ export type Database = {
           referrer?: string | null;
           earnings?: number;
           ip_hash?: string;
+          user_agent?: string;
+          is_valid?: boolean;
+          is_completed?: boolean;
+          completed_at?: string | null;
         };
       };
       wallet_transactions: {
@@ -274,6 +289,32 @@ export type Database = {
           subject?: string;
           message?: string;
           status?: string | null;
+          created_at?: string;
+        };
+      };
+      earnings: {
+        Row: {
+          id: string;
+          user_id: string;
+          click_id: string;
+          amount: number;
+          cpm_rate: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          click_id: string;
+          amount: number;
+          cpm_rate: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          click_id?: string;
+          amount?: number;
+          cpm_rate?: number;
           created_at?: string;
         };
       };
