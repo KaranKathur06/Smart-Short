@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import toast from 'react-hot-toast';
 
 function LoginContent() {
@@ -13,6 +13,7 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [displayPassword, setDisplayPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,6 +63,42 @@ function LoginContent() {
     };
   }, []);
 
+  const handleGoogleAuth = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const redirectTo = `${window.location.origin}/api/auth/callback?next=/dashboard`;
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (oauthError) {
+        const msg = oauthError.message?.toLowerCase() || '';
+        let friendly = 'Google sign-in failed. Please try again.';
+        if (msg.includes('popup')) {
+          friendly = 'Popup blocked. Please allow popups and try again.';
+        } else if (msg.includes('cancel')) {
+          friendly = 'Authentication cancelled. Please try again.';
+        } else if (msg.includes('network')) {
+          friendly = 'Network error. Check your connection and try again.';
+        }
+
+        setError(friendly);
+        toast.error(friendly);
+      }
+    } catch {
+      const friendly = 'Google sign-in failed. Please try again.';
+      setError(friendly);
+      toast.error(friendly);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -104,8 +141,8 @@ function LoginContent() {
       <div className="w-full max-w-md">
         <div className="card">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-slate-400">Sign in to your SmartShort account</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome back to SmartShort</h1>
+            <p className="text-slate-400">Sign in to your account to continue</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -177,14 +214,49 @@ function LoginContent() {
             </button>
           </form>
 
-          <div className="mt-6 space-y-3 text-center">
+          <div className="mt-4 text-center">
+            <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
+              Forgot your password?
+            </Link>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-700/60" />
+              <span className="text-xs uppercase tracking-wider text-slate-500">OR</span>
+              <div className="h-px flex-1 bg-slate-700/60" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleAuth}
+              disabled={googleLoading || loading}
+              className="mt-4 w-full relative flex items-center justify-center rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800/60 hover:border-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              aria-label="Continue with Google"
+            >
+              <span className="absolute left-4 inline-flex h-5 w-5 items-center justify-center" aria-hidden="true">
+                <svg viewBox="0 0 48 48" className="h-5 w-5">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l8.1 6.3C12.6 13.3 17.8 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.8-.4-4.1H24v7.8h12.7c-.6 3-2.4 5.6-5.1 7.4l7.9 6.1c4.6-4.2 7-10.3 7-17.2z" />
+                  <path fill="#FBBC05" d="M10.7 28.5c-.5-1.4-.8-2.9-.8-4.5s.3-3.1.8-4.5l-8.1-6.3C.9 16.4 0 20.1 0 24c0 3.9.9 7.6 2.6 10.8l8.1-6.3z" />
+                  <path fill="#34A853" d="M24 48c6.4 0 11.9-2.1 15.9-5.7l-7.9-6.1c-2.2 1.5-5 2.4-8 2.4-6.2 0-11.4-3.8-13.3-9.1l-8.1 6.3C6.5 42.6 14.6 48 24 48z" />
+                </svg>
+              </span>
+
+              {googleLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  Redirecting...
+                </span>
+              ) : (
+                'Continue with Google'
+              )}
+            </button>
+          </div>
+
+          <div className="mt-6 text-center">
             <p className="text-slate-400">
-              <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
-                Forgot your password?
-              </Link>
-            </p>
-            <p className="text-slate-400">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/auth/signup" className="text-blue-400 hover:text-blue-300">
                 Sign up
               </Link>

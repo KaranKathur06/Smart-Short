@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get('type');
   const token = searchParams.get('token');
   const next = searchParams.get('next') || '/dashboard';
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartshort.in';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.smartshort.in';
 
   // Handle password reset (recovery)
   if (type === 'recovery' && token) {

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Loader, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import toast from 'react-hot-toast';
 import { calculatePasswordStrength, getPasswordStrengthWidth } from '@/lib/password-utils';
 
@@ -18,6 +18,7 @@ export default function Signup() {
   const [displayPassword, setDisplayPassword] = useState('');
   const [displayConfirmPassword, setDisplayConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
@@ -90,6 +91,43 @@ export default function Signup() {
     };
   }, []);
 
+  const handleGoogleAuth = async () => {
+    setError('');
+    setSuccess('');
+    setGoogleLoading(true);
+
+    try {
+      const redirectTo = `${window.location.origin}/api/auth/callback?next=/dashboard`;
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (oauthError) {
+        const msg = oauthError.message?.toLowerCase() || '';
+        let friendly = 'Google sign-up failed. Please try again.';
+        if (msg.includes('popup')) {
+          friendly = 'Popup blocked. Please allow popups and try again.';
+        } else if (msg.includes('cancel')) {
+          friendly = 'Authentication cancelled. Please try again.';
+        } else if (msg.includes('network')) {
+          friendly = 'Network error. Check your connection and try again.';
+        }
+
+        setError(friendly);
+        toast.error(friendly);
+      }
+    } catch {
+      const friendly = 'Google sign-up failed. Please try again.';
+      setError(friendly);
+      toast.error(friendly);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -108,11 +146,12 @@ export default function Signup() {
     setLoading(true);
 
     try {
+      const emailRedirectTo = `${window.location.origin}/api/auth/callback?next=/dashboard`;
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: 'https://smartshort.in/auth/login',
+          emailRedirectTo,
           data: {
             full_name: name,
           },
@@ -168,7 +207,7 @@ export default function Signup() {
       <div className="w-full max-w-md">
         <div className="card">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Create your SmartShort account</h1>
             <p className="text-slate-400">Join SmartShort and start earning</p>
           </div>
 
@@ -341,6 +380,40 @@ export default function Signup() {
               )}
             </button>
           </form>
+
+          <div className="mt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-700/60" />
+              <span className="text-xs uppercase tracking-wider text-slate-500">OR</span>
+              <div className="h-px flex-1 bg-slate-700/60" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleAuth}
+              disabled={googleLoading || loading}
+              className="mt-4 w-full relative flex items-center justify-center rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800/60 hover:border-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              aria-label="Sign up with Google"
+            >
+              <span className="absolute left-4 inline-flex h-5 w-5 items-center justify-center" aria-hidden="true">
+                <svg viewBox="0 0 48 48" className="h-5 w-5">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l8.1 6.3C12.6 13.3 17.8 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.8-.4-4.1H24v7.8h12.7c-.6 3-2.4 5.6-5.1 7.4l7.9 6.1c4.6-4.2 7-10.3 7-17.2z" />
+                  <path fill="#FBBC05" d="M10.7 28.5c-.5-1.4-.8-2.9-.8-4.5s.3-3.1.8-4.5l-8.1-6.3C.9 16.4 0 20.1 0 24c0 3.9.9 7.6 2.6 10.8l8.1-6.3z" />
+                  <path fill="#34A853" d="M24 48c6.4 0 11.9-2.1 15.9-5.7l-7.9-6.1c-2.2 1.5-5 2.4-8 2.4-6.2 0-11.4-3.8-13.3-9.1l-8.1 6.3C6.5 42.6 14.6 48 24 48z" />
+                </svg>
+              </span>
+
+              {googleLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  Redirecting...
+                </span>
+              ) : (
+                'Sign up with Google'
+              )}
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-slate-400">
